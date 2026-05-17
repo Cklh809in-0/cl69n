@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NexusChat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-primary:#313338;
+  --bg-secondary:#2b2d31;
+  --bg-tertiary:#1e1f22;
+  --bg-sidebar:#2b2d31;
+  --bg-input:#383a40;
+  --bg-hover:#35373c;
+  --bg-active:#404249;
+  --bg-message-hover:#2e3035;
+  --accent:#5865f2;
+  --accent-hover:#4752c4;
+  --green:#23a55a;
+  --red:#f23f43;
+  --yellow:#f0b232;
+  --text-primary:#f2f3f5;
+  --text-secondary:#b5bac1;
+  --text-muted:#80848e;
+  --text-link:#00a8fc;
+  --border:#1e1f22;
+  --scrollbar:#202225;
+  --system:#72767d;
+  --font:'Noto Sans', sans-serif;
+  --radius:4px;
+}
+html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--bg-tertiary);color:var(--text-primary)}
+
+/* ─── SCROLLBAR ──────────────────────────────── */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:4px}
+
+/* ─── LOGIN SCREEN ───────────────────────────── */
+#login-screen{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:var(--bg-tertiary);z-index:100;
+}
+.login-box{
+  background:var(--bg-secondary);border-radius:8px;
+  padding:32px 32px 24px;width:min(480px,92vw);
+  box-shadow:0 8px 32px rgba(0,0,0,.6);
+}
+.login-logo{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:24px}
+.login-logo .icon{
+  width:48px;height:48px;border-radius:50%;
+  background:var(--accent);display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:700;color:#fff;letter-spacing:-1px;
+}
+.login-logo h1{font-size:22px;font-weight:700;color:var(--text-primary)}
+.login-box h2{text-align:center;font-size:24px;font-weight:700;margin-bottom:6px}
+.login-box .sub{text-align:center;color:var(--text-secondary);font-size:14px;margin-bottom:24px}
+.field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--text-secondary);margin-bottom:6px}
+.login-box input{
+  width:100%;padding:10px 12px;background:var(--bg-tertiary);border:1px solid #1e1f22;
+  border-radius:var(--radius);color:var(--text-primary);font-size:16px;
+  font-family:var(--font);outline:none;transition:border .15s;margin-bottom:16px;
+}
+.login-box input:focus{border-color:var(--accent)}
+.login-btn{
+  width:100%;padding:12px;background:var(--accent);border:none;border-radius:var(--radius);
+  color:#fff;font-size:16px;font-weight:500;cursor:pointer;font-family:var(--font);
+  transition:background .15s;margin-top:4px;
+}
+.login-btn:hover{background:var(--accent-hover)}
+.login-err{background:rgba(242,63,67,.15);border:1px solid rgba(242,63,67,.3);
+  color:#f23f43;border-radius:var(--radius);padding:10px 12px;font-size:14px;
+  margin-bottom:16px;display:none}
+.demo-hint{margin-top:16px;text-align:center;font-size:12px;color:var(--text-muted)}
+.demo-hint code{background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;color:var(--text-secondary)}
+
+/* ─── MAIN LAYOUT ─────────────────────────────── */
+#app{display:none;height:100vh;flex-direction:row}
+
+/* Server icon strip */
+#server-strip{
+  width:72px;flex-shrink:0;background:var(--bg-tertiary);
+  display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;
+  overflow-y:auto;
+}
+.server-icon{
+  width:48px;height:48px;border-radius:50%;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:18px;cursor:pointer;
+  transition:border-radius .2s, background .2s;position:relative;
+  color:#fff;flex-shrink:0;
+}
+.server-icon.active,.server-icon:hover{border-radius:30%}
+.server-icon::before{
+  content:'';position:absolute;left:-4px;top:50%;transform:translateY(-50%) scaleY(0);
+  width:4px;background:#fff;border-radius:0 4px 4px 0;
+  height:0;transition:height .2s, transform .2s;
+}
+.server-icon.active::before{height:36px;transform:translateY(-50%) scaleY(1)}
+.server-divider{width:32px;height:1px;background:var(--bg-hover);flex-shrink:0}
+
+/* Channel sidebar */
+#channel-sidebar{
+  width:240px;flex-shrink:0;background:var(--bg-sidebar);
+  display:flex;flex-direction:column;
+}
+#server-name-bar{
+  padding:0 16px;height:48px;display:flex;align-items:center;
+  border-bottom:1px solid var(--bg-tertiary);
+  font-weight:600;font-size:15px;cursor:pointer;
+  user-select:none;
+}
+#server-name-bar:hover{background:var(--bg-hover)}
+#channels-list{flex:1;overflow-y:auto;padding:8px 0}
+.channel-category{
+  padding:16px 8px 4px 8px;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);
+  cursor:pointer;display:flex;align-items:center;gap:4px;
+}
+.channel-item{
+  display:flex;align-items:center;gap:6px;padding:5px 8px;margin:0 8px;
+  border-radius:var(--radius);cursor:pointer;color:var(--text-muted);
+  font-size:15px;font-weight:400;transition:background .1s, color .1s;
+  user-select:none;
+}
+.channel-item:hover{background:var(--bg-hover);color:var(--text-secondary)}
+.channel-item.active{background:var(--bg-active);color:var(--text-primary);font-weight:500}
+.channel-item .hash{font-size:18px;font-weight:400;opacity:.7;flex-shrink:0;line-height:1}
+.channel-item .unread-badge{margin-left:auto;background:var(--red);color:#fff;
+  border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;}
+
+/* User panel at bottom */
+#user-panel{
+  height:52px;background:#232428;display:flex;align-items:center;
+  padding:0 8px;gap:8px;flex-shrink:0;
+}
+.up-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;position:relative}
+.up-avatar .status-dot{
+  position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;
+  background:var(--green);border-radius:50%;border:2px solid #232428;
+}
+.up-username{font-size:14px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.up-discriminator{font-size:12px;color:var(--text-muted)}
+.up-actions{display:flex;gap:2px}
+.up-btn{background:none;border:none;color:var(--text-secondary);cursor:pointer;
+  padding:5px;border-radius:var(--radius);transition:background .1s,color .1s;font-size:18px}
+.up-btn:hover{background:var(--bg-hover);color:var(--text-primary)}
+
+/* ─── CHAT AREA ──────────────────────────────── */
+#chat-area{flex:1;display:flex;flex-direction:column;background:var(--bg-primary);min-width:0}
+#chat-header{
+  height:48px;border-bottom:1px solid var(--bg-tertiary);
+  display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;
+  box-shadow:0 1px 0 rgba(0,0,0,.2);
+}
+#chat-header .ch-hash{font-size:22px;color:var(--text-muted)}
+#chat-header .ch-name{font-weight:600;font-size:15px}
+#chat-header .ch-sep{color:var(--text-muted);font-size:13px;margin:0 4px}
+#chat-header .ch-topic{color:var(--text-secondary);font-size:13px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+#messages{flex:1;overflow-y:auto;padding:16px 0 0;display:flex;flex-direction:column}
+.msg-spacer{flex:1}
+
+/* Welcome banner */
+.room-welcome{padding:16px 16px 24px;border-bottom:1px solid var(--bg-hover);margin-bottom:16px}
+.room-welcome .welcome-icon{
+  width:68px;height:68px;background:var(--bg-hover);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:12px;
+}
+.room-welcome h2{font-size:28px;font-weight:700;margin-bottom:6px}
+.room-welcome p{font-size:15px;color:var(--text-secondary)}
+
+/* Messages */
+.msg-group{padding:2px 16px;display:flex;gap:16px;position:relative}
+.msg-group:hover{background:var(--bg-message-hover)}
+.msg-group.first-in-group{margin-top:16px}
+.msg-avatar{width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-weight:700;
+  font-size:16px;color:#fff;cursor:pointer;margin-top:2px}
+.msg-avatar.compact{width:40px;height:16px;display:flex;align-items:center;
+  justify-content:flex-end;padding-right:0}
+.msg-avatar.compact .msg-ts-hover{
+  font-size:11px;color:var(--text-muted);opacity:0;
+  transition:opacity .1s;white-space:nowrap;
+}
+.msg-group:hover .msg-ts-hover{opacity:1}
+.msg-content{flex:1;min-width:0}
+.msg-header{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+.msg-username{font-weight:500;font-size:15px;cursor:pointer}
+.msg-username:hover{text-decoration:underline}
+.msg-ts{font-size:12px;color:var(--text-muted)}
+.msg-text{font-size:15px;line-height:1.375;word-wrap:break-word;color:var(--text-primary)}
+.msg-text.system-text{color:var(--system);font-size:14px;font-style:italic}
+
+/* Typing indicator */
+#typing-bar{padding:0 16px 8px;min-height:24px;font-size:13px;color:var(--text-secondary)}
+#typing-bar .dots span{
+  display:inline-block;width:5px;height:5px;background:var(--text-muted);
+  border-radius:50%;margin:0 1px;animation:tdot 1.3s infinite;
+}
+#typing-bar .dots span:nth-child(2){animation-delay:.2s}
+#typing-bar .dots span:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+
+/* Input area */
+#input-wrap{padding:0 16px 24px;flex-shrink:0}
+#input-box{
+  background:var(--bg-input);border-radius:8px;
+  display:flex;align-items:center;padding:0 16px;gap:8px;
+}
+#msg-input{
+  flex:1;background:none;border:none;outline:none;color:var(--text-primary);
+  font-size:15px;font-family:var(--font);padding:11px 0;resize:none;line-height:1.375;
+  max-height:180px;
+}
+#msg-input::placeholder{color:var(--text-muted)}
+.input-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;
+  padding:6px;border-radius:var(--radius);font-size:20px;line-height:1;transition:color .1s}
+.input-btn:hover{color:var(--text-secondary)}
+
+/* ─── MEMBERS SIDEBAR ─────────────────────────── */
+#members-sidebar{
+  width:240px;flex-shrink:0;background:var(--bg-secondary);
+  display:flex;flex-direction:column;padding:12px 0;overflow-y:auto;
+}
+.members-cat{padding:16px 8px 4px 16px;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted)}
+.member-item{
+  display:flex;align-items:center;gap:10px;padding:6px 8px 6px 16px;
+  border-radius:var(--radius);cursor:pointer;margin:0 8px;transition:background .1s;
+}
+.member-item:hover{background:var(--bg-hover)}
+.m-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-weight:700;
+  font-size:13px;color:#fff;position:relative}
+.m-avatar .m-status{
+  position:absolute;bottom:-2px;right:-2px;width:11px;height:11px;
+  border-radius:50%;border:2px solid var(--bg-secondary);background:var(--green);
+}
+.m-name{font-size:15px;color:var(--text-secondary);font-weight:400}
+.member-item:hover .m-name{color:var(--text-primary)}
+
+/* ─── ANIMATIONS ─────────────────────────────── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg-group{animation:fadeIn .18s ease}
+#login-screen{transition:opacity .3s}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="icon">N</div>
+      <h1>NexusChat</h1>
+    </div>
+    <h2>Chào mừng trở lại!</h2>
+    <p class="sub">Vui lòng đăng nhập để tiếp tục</p>
+    <div id="login-err" class="login-err"></div>
+    <div class="field-label">Tên đăng nhập</div>
+    <input id="l-user" type="text" placeholder="Nhập tên đăng nhập" autocomplete="username"/>
+    <div class="field-label">Mật khẩu</div>
+    <input id="l-pass" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password"/>
+    <button class="login-btn" onclick="doLogin()">Đăng nhập</button>
+    <div class="demo-hint">
+      Demo: <code>admin</code>/<code>admin123</code> &nbsp;·&nbsp;
+      <code>alice</code>/<code>alice123</code> &nbsp;·&nbsp;
+      <code>bob</code>/<code>bob123</code>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ APP ═══════════════════ -->
+<div id="app">
+
+  <!-- Server strip -->
+  <div id="server-strip">
+    <div class="server-icon active" title="NexusChat">N</div>
+    <div class="server-divider"></div>
+    <div class="server-icon" style="background:#23a55a;border-radius:30%" title="Game server">G</div>
+    <div class="server-icon" style="background:#ed4245;border-radius:30%" title="Music">♫</div>
+  </div>
+
+  <!-- Channel sidebar -->
+  <div id="channel-sidebar">
+    <div id="server-name-bar">⚡ NexusChat</div>
+    <div id="channels-list">
+      <div class="channel-category">📢 Kênh văn bản</div>
+      <!-- filled by JS -->
+    </div>
+    <div id="user-panel">
+      <div class="up-avatar" id="up-av">
+        <div class="status-dot"></div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="up-username" id="up-name">—</div>
+        <div class="up-discriminator">#0001 • Online</div>
+      </div>
+      <div class="up-actions">
+        <button class="up-btn" title="Cài đặt" onclick="alert('Cài đặt (chưa làm)')">⚙</button>
+        <button class="up-btn" title="Đăng xuất" onclick="doLogout()">↩</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat area -->
+  <div id="chat-area">
+    <div id="chat-header">
+      <span class="ch-hash">#</span>
+      <span class="ch-name" id="ch-name">general</span>
+      <span class="ch-sep">|</span>
+      <span class="ch-topic" id="ch-topic">Nơi tán gẫu chung</span>
+    </div>
+    <div id="messages"><div class="msg-spacer"></div></div>
+    <div id="typing-bar"></div>
+    <div id="input-wrap">
+      <div id="input-box">
+        <span style="font-size:22px;color:var(--text-muted)">＋</span>
+        <textarea id="msg-input" rows="1" placeholder="Nhắn vào #general"></textarea>
+        <button class="input-btn" title="Emoji">😊</button>
+        <button class="input-btn" title="GIF">GIF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Members sidebar -->
+  <div id="members-sidebar">
+    <div class="members-cat">Thành viên online</div>
+    <div id="members-list"></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════ STATE ═══════════════════
+let ws = null;
+let me = {username: '', avatar_color: '', room: ''};
+let rooms = [];
+let typingTimer = null;
+let typingUsers = {};
+let lastAuthor = '';
+
+// ═══════════════════ WEBSOCKET ═══════════════
+function connect(onOpen) {
+  ws = new WebSocket('ws://localhost:8765');
+  ws.onopen = onOpen;
+  ws.onmessage = e => handleMessage(JSON.parse(e.data));
+  ws.onclose = () => {
+    showSystemMsg('⚠ Mất kết nối server. Đang thử lại…', 'system');
+    setTimeout(() => connect(() => {}), 3000);
+  };
+  ws.onerror = () => {};
+}
+
+function send(obj) {
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
+}
+
+// ═══════════════════ AUTH ════════════════════
+function doLogin() {
+  const username = document.getElementById('l-user').value.trim();
+  const password = document.getElementById('l-pass').value;
+  if (!username || !password) return;
+  connect(() => send({type:'login', username, password}));
+}
+
+function doLogout() {
+  if (ws) ws.close();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.opacity = '1';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('messages').innerHTML = '<div class="msg-spacer"></div>';
+  document.getElementById('l-pass').value = '';
+  lastAuthor = '';
+}
+
+document.getElementById('l-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ═══════════════════ MESSAGE HANDLER ═════════
+function handleMessage(msg) {
+  switch(msg.type) {
+    case 'login_ok':
+      me.username = msg.username;
+      me.avatar_color = msg.avatar_color;
+      me.room = msg.current_room;
+      rooms = msg.rooms;
+      loginSuccess();
+      renderChannels();
+      loadHistory(msg.history);
+      break;
+
+    case 'login_error':
+      showLoginError(msg.message);
+      if (ws) ws.close();
+      break;
+
+    case 'room_joined':
+      me.room = msg.room;
+      document.getElementById('ch-name').textContent = msg.room;
+      document.getElementById('ch-topic').textContent = msg.topic;
+      document.getElementById('msg-input').placeholder = `Nhắn vào #${msg.room}`;
+      document.getElementById('messages').innerHTML = '<div class="msg-spacer"></div>';
+      lastAuthor = '';
+      loadHistory(msg.history);
+      setActiveChannel(msg.room);
+      break;
+
+    case 'message':
+      if (msg.room === me.room) appendMessage(msg);
+      break;
+
+    case 'system':
+      showSystemMsg(msg.text, msg.ts);
+      break;
+
+    case 'presence':
+      if (msg.room === me.room) renderMembers(msg.members);
+      break;
+
+    case 'typing':
+      if (msg.room === me.room && msg.username !== me.username) showTyping(msg.username);
+      break;
+  }
+}
+
+// ═══════════════════ UI: LOGIN ════════════════
+function showLoginError(msg) {
+  const el = document.getElementById('login-err');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function loginSuccess() {
+  document.getElementById('login-screen').style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+  }, 300);
+  // User panel
+  const av = document.getElementById('up-av');
+  av.style.background = me.avatar_color;
+  av.innerHTML = `${initials(me.username)}<div class="status-dot"></div>`;
+  document.getElementById('up-name').textContent = me.username;
+}
+
+// ═══════════════════ UI: CHANNELS ════════════
+function renderChannels() {
+  const list = document.getElementById('channels-list');
+  list.innerHTML = '<div class="channel-category">📢 Kênh văn bản</div>';
+  rooms.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'channel-item' + (r.name === me.room ? ' active' : '');
+    el.dataset.room = r.name;
+    el.innerHTML = `<span class="hash">#</span>${r.name}`;
+    el.onclick = () => joinRoom(r.name);
+    list.appendChild(el);
+  });
+}
+
+function setActiveChannel(room) {
+  document.querySelectorAll('.channel-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.room === room);
+  });
+}
+
+function joinRoom(room) {
+  if (room === me.room) return;
+  send({type:'join_room', room});
+}
+
+// ═══════════════════ UI: MESSAGES ════════════
+function initials(name) {
+  return name.slice(0,2).toUpperCase();
+}
+
+function avatarHtml(color, name, size='40px') {
+  return `<div class="msg-avatar" style="background:${color};width:${size};height:${size}">${initials(name)}</div>`;
+}
+
+function loadHistory(history) {
+  lastAuthor = '';
+  history.forEach(m => {
+    if (m.type === 'system' || m.system) showSystemMsg(m.text, m.ts);
+    else appendMessage(m);
+  });
+}
+
+function appendMessage(msg) {
+  const area = document.getElementById('messages');
+  const spacer = area.querySelector('.msg-spacer');
+  const isMe = msg.username === me.username;
+  const grouped = lastAuthor === msg.username;
+
+  const row = document.createElement('div');
+  row.className = 'msg-group' + (grouped ? '' : ' first-in-group');
+
+  if (grouped) {
+    row.innerHTML = `
+      <div class="msg-avatar compact">
+        <span class="msg-ts-hover">${msg.ts}</span>
+      </div>
+      <div class="msg-content">
+        <div class="msg-text">${escHtml(msg.text)}</div>
+      </div>`;
+  } else {
+    row.innerHTML = `
+      ${avatarHtml(msg.avatar_color, msg.username)}
+      <div class="msg-content">
+        <div class="msg-header">
+          <span class="msg-username" style="color:${msg.avatar_color}">${escHtml(msg.username)}</span>
+          <span class="msg-ts">${msg.ts}</span>
+        </div>
+        <div class="msg-text">${escHtml(msg.text)}</div>
+      </div>`;
+  }
+
+  area.insertBefore(row, spacer);
+  lastAuthor = msg.username;
+
+  // Clear typing when message arrives
+  clearTyping(msg.username);
+  scrollBottom();
+}
+
+function showSystemMsg(text, ts) {
+  const area = document.getElementById('messages');
+  const spacer = area.querySelector('.msg-spacer');
+  const row = document.createElement('div');
+  row.className = 'msg-group first-in-group';
+  row.innerHTML = `
+    <div style="width:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--system);font-size:18px">—</div>
+    <div class="msg-content">
+      <span class="msg-text system-text">${escHtml(text)}</span>
+      ${ts ? `<span style="font-size:11px;color:var(--text-muted);margin-left:8px">${ts}</span>` : ''}
+    </div>`;
+  area.insertBefore(row, spacer);
+  lastAuthor = '';
+  scrollBottom();
+}
+
+function scrollBottom() {
+  const area = document.getElementById('messages');
+  area.scrollTop = area.scrollHeight;
+}
+
+// ═══════════════════ UI: TYPING ══════════════
+function showTyping(username) {
+  typingUsers[username] = Date.now();
+  renderTypingBar();
+  setTimeout(() => {
+    delete typingUsers[username];
+    renderTypingBar();
+  }, 3000);
+}
+
+function clearTyping(username) {
+  delete typingUsers[username];
+  renderTypingBar();
+}
+
+function renderTypingBar() {
+  const bar = document.getElementById('typing-bar');
+  const names = Object.keys(typingUsers);
+  if (!names.length) { bar.innerHTML = ''; return; }
+  const who = names.length === 1 ? `<b>${names[0]}</b>` : names.slice(0,-1).map(n=>`<b>${n}</b>`).join(', ') + ` và <b>${names[names.length-1]}</b>`;
+  bar.innerHTML = `<span class="dots"><span></span><span></span><span></span></span> &nbsp;${who} đang nhập…`;
+}
+
+// ═══════════════════ UI: MEMBERS ═════════════
+function renderMembers(members) {
+  const list = document.getElementById('members-list');
+  list.innerHTML = '';
+  members.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'member-item';
+    el.innerHTML = `
+      <div class="m-avatar" style="background:${m.avatar_color}">
+        ${initials(m.username)}
+        <div class="m-status"></div>
+      </div>
+      <span class="m-name">${escHtml(m.username)}</span>`;
+    list.appendChild(el);
+  });
+}
+
+// ═══════════════════ INPUT ═══════════════════
+const msgInput = document.getElementById('msg-input');
+
+msgInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    const text = msgInput.value.trim();
+    if (!text) return;
+    send({type:'message', text});
+    msgInput.value = '';
+    msgInput.style.height = 'auto';
+  }
+});
+
+msgInput.addEventListener('input', () => {
+  // Auto-resize
+  msgInput.style.height = 'auto';
+  msgInput.style.height = Math.min(msgInput.scrollHeight, 180) + 'px';
+  // Typing indicator
+  send({type:'typing'});
+});
+
+// ═══════════════════ UTILS ═══════════════════
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>');
+}
+
+// Update channel name placeholder
+document.getElementById('ch-name').addEventListener('DOMCharacterDataModified', () => {
+  msgInput.placeholder = `Nhắn vào #${document.getElementById('ch-name').textContent}`;
+});
+
+// Keyboard shortcut: Enter on login
+document.getElementById('l-user').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('l-pass').focus();
+});
+</script>
+</body>
+</html>
