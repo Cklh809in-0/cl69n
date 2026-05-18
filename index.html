@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux World — Ubuntu & Arch Linux</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ubuntu-orange: #E95420;
+    --ubuntu-aubergine: #2C001E;
+    --arch-blue: #1793D1;
+    --arch-dark: #0A1628;
+    --bg: #080C14;
+    --surface: #0E1520;
+    --border: rgba(255,255,255,0.07);
+    --text: #E8EAF0;
+    --muted: #6B7280;
+    --code-bg: #0D1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s, background 0.2s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1.5px solid rgba(255,255,255,0.4);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.35s cubic-bezier(.25,.46,.45,.94);
+  }
+
+  /* Nav */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 60px;
+    background: rgba(8,12,20,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+  .nav-logo span { color: var(--text); }
+
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 120px 60px 80px;
+  }
+
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  }
+
+  .hero-glow-ubuntu {
+    position: absolute; top: 20%; left: 15%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(233,84,32,0.15) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite;
+  }
+  .hero-glow-arch {
+    position: absolute; top: 20%; right: 15%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(23,147,209,0.15) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite 2s;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+
+  .hero-content { text-align: center; position: relative; z-index: 2; max-width: 900px; }
+
+  .hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-title {
+    font-size: clamp(52px, 8vw, 100px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+
+  .hero-title .ubuntu-word { color: var(--ubuntu-orange); }
+  .hero-title .arch-word { color: var(--arch-blue); }
+  .hero-title .vs { color: var(--muted); font-size: 0.5em; vertical-align: middle; }
+
+  .hero-desc {
+    font-size: 18px;
+    color: var(--muted);
+    font-weight: 400;
+    line-height: 1.7;
+    max-width: 600px;
+    margin: 0 auto 48px;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+
+  .btn {
+    padding: 14px 32px;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .btn-ubuntu {
+    background: var(--ubuntu-orange);
+    color: #fff;
+  }
+  .btn-ubuntu:hover { background: #d44819; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(233,84,32,0.35); }
+  .btn-arch {
+    background: transparent;
+    color: var(--arch-blue);
+    border-color: var(--arch-blue);
+  }
+  .btn-arch:hover { background: rgba(23,147,209,0.1); transform: translateY(-2px); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Section base */
+  section { padding: 100px 60px; }
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 60px;
+  }
+
+  /* Distro cards */
+  .distros-section { background: var(--bg); }
+
+  .distros-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    max-width: 1200px;
+    margin: 0 auto;
+    border: 1px solid var(--border);
+  }
+
+  .distro-card {
+    background: var(--surface);
+    padding: 60px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .distro-card:hover { background: #121a2a; }
+
+  .distro-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .distro-card.ubuntu::before { background: var(--ubuntu-orange); }
+  .distro-card.arch::before { background: var(--arch-blue); }
+
+  .distro-logo {
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin-bottom: 28px;
+  }
+  .distro-card.ubuntu .distro-logo { background: rgba(233,84,32,0.12); }
+  .distro-card.arch .distro-logo { background: rgba(23,147,209,0.12); }
+
+  .distro-name {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .distro-card.ubuntu .distro-name { color: var(--ubuntu-orange); }
+  .distro-card.arch .distro-name { color: var(--arch-blue); }
+
+  .distro-tagline {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+  }
+
+  .distro-desc {
+    font-size: 15px;
+    line-height: 1.75;
+    color: rgba(232,234,240,0.75);
+    margin-bottom: 36px;
+  }
+
+  .distro-specs { display: flex; flex-direction: column; gap: 12px; }
+
+  .spec-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .spec-key { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1px; }
+  .spec-val { color: var(--text); font-weight: 600; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+  .badge-ubuntu { background: rgba(233,84,32,0.15); color: var(--ubuntu-orange); }
+  .badge-arch { background: rgba(23,147,209,0.15); color: var(--arch-blue); }
+  .badge-green { background: rgba(34,197,94,0.12); color: #4ade80; }
+  .badge-yellow { background: rgba(234,179,8,0.12); color: #facc15; }
+
+  /* Comparison table */
+  .comparison-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .comparison-table {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    border-collapse: collapse;
+  }
+
+  .comparison-table th {
+    padding: 16px 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .comparison-table th.ubuntu-col { color: var(--ubuntu-orange); }
+  .comparison-table th.arch-col { color: var(--arch-blue); }
+
+  .comparison-table td {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    vertical-align: top;
+  }
+  .comparison-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .comparison-table .feature-name { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+  /* Install section */
+  .install-section { background: var(--bg); }
+
+  .tabs {
+    display: flex; gap: 0;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    max-width: 900px;
+    margin-left: auto; margin-right: auto;
+    margin-bottom: 40px;
+  }
+
+  .tab-btn {
+    padding: 14px 28px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: none;
+    position: relative;
+    transition: color 0.2s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab-btn.active { color: var(--arch-blue); border-bottom-color: var(--arch-blue); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  .tab-content { display: none; max-width: 900px; margin: 0 auto; }
+  .tab-content.active { display: block; }
+
+  /* Code blocks */
+  .step {
+    margin-bottom: 40px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .step:hover { border-color: rgba(255,255,255,0.12); }
+
+  .step-header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 24px;
+    background: #0b1119;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .archinstall .step-num { background: rgba(23,147,209,0.15); color: var(--arch-blue); border: 1px solid rgba(23,147,209,0.3); }
+  .manual .step-num { background: rgba(233,84,32,0.15); color: var(--ubuntu-orange); border: 1px solid rgba(233,84,32,0.3); }
+
+  .step-title { font-size: 15px; font-weight: 700; }
+  .step-desc { font-size: 13px; color: var(--muted); margin-left: auto; font-family: 'IBM Plex Mono', monospace; }
+
+  pre {
+    background: var(--code-bg);
+    padding: 24px;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #c9d1d9;
+  }
+
+  .comment { color: #6e7681; }
+  .cmd { color: #79c0ff; }
+  .flag { color: #d2a8ff; }
+  .str { color: #a5d6ff; }
+  .kw { color: #ff7b72; }
+  .num { color: #f0883e; }
+  .highlight-line { 
+    background: rgba(23,147,209,0.06);
+    display: block;
+    margin: 0 -24px;
+    padding: 0 24px;
+  }
+
+  .copy-btn {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    cursor: none;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+  .note-box {
+    background: rgba(23,147,209,0.06);
+    border: 1px solid rgba(23,147,209,0.2);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: rgba(232,234,240,0.8);
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+  .note-box.warn {
+    background: rgba(234,179,8,0.06);
+    border-color: rgba(234,179,8,0.2);
+    color: rgba(250,204,21,0.9);
+  }
+  .note-box strong {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+    color: var(--arch-blue);
+  }
+  .note-box.warn strong { color: #facc15; }
+
+  /* Footer */
+  footer {
+    padding: 60px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 20px;
+  }
+  .footer-brand {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--text); }
+
+  /* Divider */
+  .divider {
+    height: 1px; background: var(--border);
+    max-width: 1200px; margin: 0 auto;
+  }
+
+  /* Scroll indicator */
+  .scroll-line {
+    position: fixed; top: 0; left: 0;
+    height: 2px; background: linear-gradient(90deg, var(--ubuntu-orange), var(--arch-blue));
+    z-index: 200;
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 0.1s;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    section { padding: 80px 24px; }
+    .hero { padding: 100px 24px 60px; }
+    .distros-grid { grid-template-columns: 1fr; }
+    .distro-card { padding: 40px 28px; }
+    footer { padding: 40px 24px; flex-direction: column; }
+    .tabs { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="scroll-line" id="scrollLine"></div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo"><span>Linux</span> / Distros</div>
+  <ul class="nav-links">
+    <li><a href="#distros">Overview</a></li>
+    <li><a href="#compare">So sánh</a></li>
+    <li><a href="#install">Cài đặt</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow-ubuntu"></div>
+  <div class="hero-glow-arch"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">// Linux Distributions</p>
+    <h1 class="hero-title">
+      <span class="ubuntu-word">Ubuntu</span>
+      <br>
+      <span class="vs">vs</span>
+      <span class="arch-word"> Arch</span>
+    </h1>
+    <p class="hero-desc">
+      Hai bản phân phối Linux nổi tiếng nhất — một dành cho người mới bắt đầu, một dành cho những ai muốn kiểm soát hoàn toàn hệ thống của mình.
+    </p>
+    <div class="hero-actions">
+      <a href="#distros" class="btn btn-ubuntu">Tìm hiểu Ubuntu</a>
+      <a href="#install" class="btn btn-arch">Hướng dẫn cài Arch</a>
+    </div>
+  </div>
+</section>
+
+<!-- Distros -->
+<section class="distros-section" id="distros">
+  <div style="max-width:1200px;margin:0 auto;">
+    <p class="section-label">// 01 — Giới thiệu</p>
+    <h2 class="section-title">Hai thế giới<br>Linux khác nhau</h2>
+    <div class="distros-grid">
+
+      <!-- Ubuntu -->
+      <div class="distro-card ubuntu">
+        <div class="distro-logo">🟠</div>
+        <div class="distro-name">Ubuntu</div>
+        <div class="distro-tagline">// "Linux for Human Beings"</div>
+        <div class="distro-desc">
+          Ubuntu là bản phân phối Linux phổ biến nhất thế giới, được phát triển bởi Canonical. Thiết kế hướng đến người dùng phổ thông với giao diện thân thiện, cài đặt dễ dàng và hỗ trợ phần cứng rộng rãi. Lý tưởng cho người mới bắt đầu với Linux hay môi trường doanh nghiệp.
+        </div>
+        <div class="distro-specs">
+          <div class="spec-row">
+            <span class="spec-key">PHÁT HÀNH</span>
+            <span class="spec-val">2004 — Canonical</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">CƠ SỞ</span>
+            <span class="spec-val">Debian</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">PACKAGE MGR</span>
+            <span class="spec-val">APT / Snap</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">RELEASE</span>
+            <span class="spec-val"><span class="badge badge-green">LTS + Rolling</span></span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">ĐỘ KHÓ</span>
+            <span class="spec-val"><span class="badge badge-green">Dễ — Beginner</span></span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">DESKTOP MẶC ĐỊNH</span>
+            <span class="spec-val">GNOME</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">PHIÊN BẢN MỚI NHẤT</span>
+            <span class="spec-val">Ubuntu 25.04</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Arch -->
+      <div class="distro-card arch">
+        <div class="distro-logo">🔵</div>
+        <div class="distro-name">Arch Linux</div>
+        <div class="distro-tagline">// "Keep It Simple, Stupid"</div>
+        <div class="distro-desc">
+          Arch Linux là bản phân phối tối giản, rolling release, được cài đặt thủ công từ đầu. Triết lý KISS (Keep It Simple) cho phép người dùng xây dựng hệ thống hoàn toàn theo ý muốn — chỉ có những gì bạn thực sự cần. Dành cho người dùng muốn học sâu về Linux.
+        </div>
+        <div class="distro-specs">
+          <div class="spec-row">
+            <span class="spec-key">PHÁT HÀNH</span>
+            <span class="spec-val">2002 — Judd Vinet</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">CƠ SỞ</span>
+            <span class="spec-val">Độc lập</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">PACKAGE MGR</span>
+            <span class="spec-val">Pacman / AUR</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">RELEASE</span>
+            <span class="spec-val"><span class="badge badge-arch">Rolling Release</span></span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">ĐỘ KHÓ</span>
+            <span class="spec-val"><span class="badge badge-yellow">Khó — Advanced</span></span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">DESKTOP MẶC ĐỊNH</span>
+            <span class="spec-val">Không có (tuỳ chọn)</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">PHIÊN BẢN</span>
+            <span class="spec-val">Rolling (mới nhất liên tục)</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Comparison -->
+<section class="comparison-section" id="compare">
+  <div style="max-width:900px;margin:0 auto;">
+    <p class="section-label">// 02 — So sánh</p>
+    <h2 class="section-title">Chọn distro nào<br>phù hợp với bạn?</h2>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Tiêu chí</th>
+          <th class="ubuntu-col">🟠 Ubuntu</th>
+          <th class="arch-col">🔵 Arch</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="feature-name">Độ khó cài đặt</td>
+          <td><span class="badge badge-green">Rất dễ — GUI installer</span></td>
+          <td><span class="badge badge-yellow">Khó — Terminal only</span></td>
+        </tr>
+        <tr>
+          <td class="feature-name">Phù hợp với</td>
+          <td>Người mới, Developer, Doanh nghiệp</td>
+          <td>Linux enthusiast, Power user</td>
+        </tr>
+        <tr>
+          <td class="feature-name">Tốc độ hệ thống</td>
+          <td>Trung bình (nhiều dịch vụ mặc định)</td>
+          <td>Nhanh (tối giản, chỉ cài những gì cần)</td>
+        </tr>
+        <tr>
+          <td class="feature-name">Kho phần mềm</td>
+          <td>APT repos + Snap Store + PPA</td>
+          <td>Pacman repos + AUR (rất lớn)</td>
+        </tr>
+        <tr>
+          <td class="feature-name">Cập nhật</td>
+          <td>LTS (2 năm) hoặc 6 tháng</td>
+          <td>Rolling — cập nhật liên tục</td>
+        </tr>
+        <tr>
+          <td class="feature-name">Tài liệu</td>
+          <td>Ubuntu Community Docs</td>
+          <td>Arch Wiki (tốt nhất cộng đồng Linux)</td>
+        </tr>
+        <tr>
+          <td class="feature-name">Customization</td>
+          <td>Trung bình</td>
+          <td>Tuyệt đối — từng bytes một</td>
+        </tr>
+        <tr>
+          <td class="feature-name">Hỗ trợ phần cứng</td>
+          <td>Rộng rãi, tự động</td>
+          <td>Tốt, nhưng cần cấu hình thủ công</td>
+        </tr>
+        <tr>
+          <td class="feature-name">Thời gian học</td>
+          <td>Vài giờ</td>
+          <td>Vài ngày đến vài tuần</td>
+        </tr>
+        <tr>
+          <td class="feature-name">Ổn định</td>
+          <td>Rất ổn định (LTS)</td>
+          <td>Ổn định nếu cẩn thận khi update</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Install Guide -->
+<section class="install-section" id="install">
+  <div style="max-width:900px;margin:0 auto;">
+    <p class="section-label">// 03 — Cài đặt Arch Linux</p>
+    <h2 class="section-title">Hướng dẫn<br>cài Arch Linux</h2>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('archinstall', this)">⚡ Với Archinstall</button>
+      <button class="tab-btn" onclick="switchTab('manual', this)">🛠 Thủ công (Manual)</button>
+    </div>
+
+    <!-- ARCHINSTALL TAB -->
+    <div class="tab-content archinstall active" id="tab-archinstall">
+
+      <div class="note-box">
+        <strong>// Archinstall là gì?</strong>
+        Archinstall là script cài đặt chính thức được tích hợp trong ISO Arch Linux (từ 2021). Nó cung cấp giao diện TUI (text-based UI) giúp cài đặt nhanh chóng hơn nhiều mà không cần nhớ từng lệnh.
+      </div>
+
+      <br>
+
+      <div class="step archinstall">
+        <div class="step-header">
+          <div class="step-num">1</div>
+          <div class="step-title">Tải và tạo USB bootable</div>
+          <div class="step-desc">Chuẩn bị</div>
+        </div>
+        <pre><code><span class="comment"># Tải ISO từ trang chủ: https://archlinux.org/download/</span>
+<span class="comment"># Tạo USB bootable trên Linux:</span>
+<span class="cmd">dd</span> <span class="flag">bs=4M</span> <span class="flag">if=</span><span class="str">archlinux-*.iso</span> <span class="flag">of=</span><span class="str">/dev/sdX</span> <span class="flag">conv=fsync</span> <span class="flag">oflag=direct</span> <span class="flag">status=progress</span>
+
+<span class="comment"># Trên Windows: dùng Rufus hoặc Balena Etcher</span>
+<span class="comment"># Chọn chế độ DD Write khi dùng Rufus</span></code></pre>
+      </div>
+
+      <div class="step archinstall">
+        <div class="step-header">
+          <div class="step-num">2</div>
+          <div class="step-title">Boot vào Arch ISO</div>
+          <div class="step-desc">BIOS/UEFI</div>
+        </div>
+        <pre><code><span class="comment"># Khởi động máy, vào BIOS/UEFI (F2, F12, Delete...)</span>
+<span class="comment"># Tắt Secure Boot nếu cần</span>
+<span class="comment"># Chọn boot từ USB</span>
+
+<span class="comment"># Sau khi vào live environment, kiểm tra network:</span>
+<span class="cmd">ping</span> <span class="flag">-c 3</span> archlinux.org
+
+<span class="comment"># Nếu dùng WiFi:</span>
+<span class="cmd">iwctl</span>
+  <span class="comment"># Trong iwctl shell:</span>
+  station wlan0 scan
+  station wlan0 connect <span class="str">"Tên WiFi"</span></code></pre>
+      </div>
+
+      <div class="step archinstall">
+        <div class="step-header">
+          <div class="step-num">3</div>
+          <div class="step-title">Chạy Archinstall</div>
+          <div class="step-desc">TUI Installer</div>
+        </div>
+        <pre><code><span class="comment"># Đơn giản chỉ cần gõ lệnh này:</span>
+<span class="cmd">archinstall</span>
+
+<span class="comment"># Các tuỳ chọn cần cấu hình trong menu:</span>
+<span class="comment"># ┌─────────────────────────────────────────┐</span>
+<span class="comment"># │  Archinstall guided installer            │</span>
+<span class="comment"># ├─────────────────────────────────────────┤</span>
+<span class="comment"># │  Mirrors           → Chọn Vietnam/Asia   │</span>
+<span class="comment"># │  Locales           → vi_VN.UTF-8         │</span>
+<span class="comment"># │  Disk config       → Best-effort erase   │</span>
+<span class="comment"># │  Bootloader        → GRUB (recommended)  │</span>
+<span class="comment"># │  Swap              → zram (recommended)  │</span>
+<span class="comment"># │  Hostname          → archlinux           │</span>
+<span class="comment"># │  Root password     → Đặt mật khẩu        │</span>
+<span class="comment"># │  User account      → Tạo user mới        │</span>
+<span class="comment"># │  Profile           → Desktop environment  │</span>
+<span class="comment"># │  Audio             → Pipewire            │</span>
+<span class="comment"># │  Network           → NetworkManager      │</span>
+<span class="comment"># │  Timezone          → Asia/Ho_Chi_Minh    │</span>
+<span class="comment"># └─────────────────────────────────────────┘</span></code></pre>
+      </div>
+
+      <div class="step archinstall">
+        <div class="step-header">
+          <div class="step-num">4</div>
+          <div class="step-title">Chọn Desktop Environment</div>
+          <div class="step-desc">Profile</div>
+        </div>
+        <pre><code><span class="comment"># Trong mục "Profile" → "Desktop":</span>
+<span class="comment"># Chọn Desktop Environment tuỳ thích:</span>
+
+<span class="str">GNOME</span>     <span class="comment">→ Hiện đại, mượt, giống macOS (nặng hơn)</span>
+<span class="str">KDE Plasma</span> <span class="comment">→ Đẹp, nhiều tùy chỉnh, nhẹ hơn GNOME</span>
+<span class="str">XFCE</span>      <span class="comment">→ Nhẹ, nhanh, phù hợp máy cấu hình thấp</span>
+<span class="str">Hyprland</span>  <span class="comment">→ Tiling WM, cực đẹp với animations</span>
+<span class="str">i3</span>        <span class="comment">→ Tiling WM, nhẹ, chỉ keyboard</span>
+
+<span class="comment"># Khuyến nghị người mới: KDE Plasma hoặc GNOME</span></code></pre>
+      </div>
+
+      <div class="step archinstall">
+        <div class="step-header">
+          <div class="step-num">5</div>
+          <div class="step-title">Cài đặt & Khởi động lại</div>
+          <div class="step-desc">Finish</div>
+        </div>
+        <pre><code><span class="comment"># Sau khi cấu hình xong, chọn "Install"</span>
+<span class="comment"># Quá trình cài đặt mất khoảng 5-15 phút tuỳ tốc độ mạng</span>
+
+<span class="comment"># Sau khi cài xong, chọn "Reboot"</span>
+<span class="comment"># Rút USB ra, boot vào hệ thống mới!</span>
+
+<span class="comment"># Sau khi vào hệ thống, cập nhật toàn bộ packages:</span>
+<span class="cmd">sudo pacman</span> <span class="flag">-Syu</span>
+
+<span class="comment"># Cài AUR helper (yay):</span>
+<span class="cmd">git clone</span> https://aur.archlinux.org/yay.git
+<span class="cmd">cd</span> yay <span class="kw">&&</span> <span class="cmd">makepkg</span> <span class="flag">-si</span></code></pre>
+      </div>
+
+    </div>
+
+    <!-- MANUAL TAB -->
+    <div class="tab-content manual" id="tab-manual">
+
+      <div class="note-box warn">
+        <strong>⚠ Cảnh báo</strong>
+        Cách này yêu cầu bạn thực hiện mọi thao tác thủ công qua terminal. Đọc kỹ từng bước trước khi thực hiện. Backup dữ liệu quan trọng trước khi bắt đầu!
+      </div>
+
+      <br>
+
+      <div class="step manual">
+        <div class="step-header">
+          <div class="step-num">1</div>
+          <div class="step-title">Kiểm tra kết nối mạng & Boot mode</div>
+          <div class="step-desc">Chuẩn bị</div>
+        </div>
+        <pre><code><span class="comment"># Kiểm tra UEFI hay BIOS:</span>
+<span class="cmd">ls</span> /sys/firmware/efi/efivars
+<span class="comment"># Nếu thư mục tồn tại → UEFI mode</span>
+
+<span class="comment"># Kiểm tra internet:</span>
+<span class="cmd">ping</span> <span class="flag">-c 3</span> archlinux.org
+
+<span class="comment"># Kết nối WiFi nếu cần:</span>
+<span class="cmd">iwctl</span>
+  device list
+  station wlan0 scan
+  station wlan0 get-networks
+  station wlan0 connect <span class="str">"SSID"</span>
+
+<span class="comment"># Đồng bộ thời gian:</span>
+<span class="cmd">timedatectl</span> set-ntp true</code></pre>
+      </div>
+
+      <div class="step manual">
+        <div class="step-header">
+          <div class="step-num">2</div>
+          <div class="step-title">Phân vùng ổ đĩa</div>
+          <div class="step-desc">Disk Partitioning</div>
+        </div>
+        <pre><code><span class="comment"># Liệt kê các ổ đĩa:</span>
+<span class="cmd">lsblk</span>
+<span class="comment"># hoặc fdisk -l</span>
+
+<span class="comment"># Phân vùng với cfdisk (dễ hơn):</span>
+<span class="cmd">cfdisk</span> /dev/sda   <span class="comment"># hoặc /dev/nvme0n1</span>
+
+<span class="comment"># Sơ đồ phân vùng cho UEFI (khuyến nghị):</span>
+<span class="comment"># ┌────────────┬──────────┬────────────┐</span>
+<span class="comment"># │ Partition  │   Size   │    Type    │</span>
+<span class="comment"># ├────────────┼──────────┼────────────┤</span>
+<span class="comment"># │ /dev/sda1  │  512 MB  │ EFI System │</span>
+<span class="comment"># │ /dev/sda2  │  8-16 GB │ Linux swap │</span>
+<span class="comment"># │ /dev/sda3  │  Còn lại │ Linux fs   │</span>
+<span class="comment"># └────────────┴──────────┴────────────┘</span>
+
+<span class="comment"># Format các phân vùng:</span>
+<span class="cmd">mkfs.fat</span> <span class="flag">-F32</span> /dev/sda1    <span class="comment"># EFI</span>
+<span class="cmd">mkswap</span> /dev/sda2             <span class="comment"># Swap</span>
+<span class="cmd">mkfs.ext4</span> /dev/sda3          <span class="comment"># Root</span></code></pre>
+      </div>
+
+      <div class="step manual">
+        <div class="step-header">
+          <div class="step-num">3</div>
+          <div class="step-title">Mount và cài base system</div>
+          <div class="step-desc">Pacstrap</div>
+        </div>
+        <pre><code><span class="comment"># Mount phân vùng root:</span>
+<span class="cmd">mount</span> /dev/sda3 /mnt
+
+<span class="comment"># Mount EFI:</span>
+<span class="cmd">mkdir</span> <span class="flag">-p</span> /mnt/boot/efi
+<span class="cmd">mount</span> /dev/sda1 /mnt/boot/efi
+
+<span class="comment"># Kích hoạt swap:</span>
+<span class="cmd">swapon</span> /dev/sda2
+
+<span class="comment"># Chọn mirror server nhanh nhất:</span>
+<span class="cmd">reflector</span> <span class="flag">--country Vietnam,Singapore --sort rate --save</span> /etc/pacman.d/mirrorlist
+
+<span class="comment"># Cài hệ thống cơ bản:</span>
+<span class="cmd">pacstrap</span> <span class="flag">-K</span> /mnt base linux linux-firmware
+<span class="comment"># Thêm packages tuỳ chọn:</span>
+<span class="cmd">pacstrap</span> <span class="flag">-K</span> /mnt base linux linux-firmware \
+  linux-headers base-devel \
+  networkmanager vim nano sudo \
+  grub efibootmgr \
+  intel-ucode  <span class="comment"># hoặc amd-ucode cho AMD</span></code></pre>
+      </div>
+
+      <div class="step manual">
+        <div class="step-header">
+          <div class="step-num">4</div>
+          <div class="step-title">Cấu hình hệ thống</div>
+          <div class="step-desc">System Config</div>
+        </div>
+        <pre><code><span class="comment"># Tạo fstab:</span>
+<span class="cmd">genfstab</span> <span class="flag">-U</span> /mnt >> /mnt/etc/fstab
+<span class="cmd">cat</span> /mnt/etc/fstab  <span class="comment"># Kiểm tra</span>
+
+<span class="comment"># Chroot vào hệ thống mới:</span>
+<span class="cmd">arch-chroot</span> /mnt
+
+<span class="comment"># Cài timezone:</span>
+<span class="cmd">ln</span> <span class="flag">-sf</span> /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime
+<span class="cmd">hwclock</span> <span class="flag">--systohc</span>
+
+<span class="comment"># Cài locale (ngôn ngữ):</span>
+<span class="cmd">vim</span> /etc/locale.gen
+<span class="comment"># Bỏ comment dòng: en_US.UTF-8 UTF-8</span>
+<span class="comment">#                  vi_VN.UTF-8 UTF-8</span>
+<span class="cmd">locale-gen</span>
+<span class="cmd">echo</span> <span class="str">"LANG=en_US.UTF-8"</span> > /etc/locale.conf
+
+<span class="comment"># Đặt hostname:</span>
+<span class="cmd">echo</span> <span class="str">"archlinux"</span> > /etc/hostname
+
+<span class="comment"># Cấu hình /etc/hosts:</span>
+<span class="cmd">cat</span> >> /etc/hosts <span class="kw"><<</span> EOF
+<span class="num">127.0.0.1</span>  localhost
+<span class="num">::1</span>        localhost
+<span class="num">127.0.1.1</span>  archlinux.localdomain archlinux
+EOF</code></pre>
+      </div>
+
+      <div class="step manual">
+        <div class="step-header">
+          <div class="step-num">5</div>
+          <div class="step-title">Tạo user và cài GRUB</div>
+          <div class="step-desc">User & Bootloader</div>
+        </div>
+        <pre><code><span class="comment"># Đặt password root:</span>
+<span class="cmd">passwd</span>
+
+<span class="comment"># Tạo user mới:</span>
+<span class="cmd">useradd</span> <span class="flag">-m -G wheel -s</span> /bin/bash username
+<span class="cmd">passwd</span> username
+
+<span class="comment"># Cấp quyền sudo cho wheel group:</span>
+<span class="cmd">visudo</span>
+<span class="comment"># Bỏ comment dòng: %wheel ALL=(ALL:ALL) ALL</span>
+
+<span class="comment"># Cài bootloader GRUB (UEFI):</span>
+<span class="cmd">grub-install</span> <span class="flag">--target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB</span>
+<span class="cmd">grub-mkconfig</span> <span class="flag">-o</span> /boot/grub/grub.cfg
+
+<span class="comment"># Bật NetworkManager:</span>
+<span class="cmd">systemctl</span> enable NetworkManager</code></pre>
+      </div>
+
+      <div class="step manual">
+        <div class="step-header">
+          <div class="step-num">6</div>
+          <div class="step-title">Cài Desktop Environment</div>
+          <div class="step-desc">GUI Setup</div>
+        </div>
+        <pre><code><span class="comment"># Thoát chroot và reboot:</span>
+<span class="cmd">exit</span>
+<span class="cmd">umount</span> <span class="flag">-R</span> /mnt
+<span class="cmd">reboot</span>
+
+<span class="comment"># ─── Sau khi reboot và đăng nhập ───</span>
+
+<span class="comment"># Cài KDE Plasma (khuyến nghị):</span>
+<span class="cmd">sudo pacman</span> <span class="flag">-S</span> plasma kde-applications sddm
+<span class="cmd">sudo systemctl</span> enable sddm
+
+<span class="comment"># HOẶC cài GNOME:</span>
+<span class="cmd">sudo pacman</span> <span class="flag">-S</span> gnome gnome-extra gdm
+<span class="cmd">sudo systemctl</span> enable gdm
+
+<span class="comment"># HOẶC cài XFCE (nhẹ):</span>
+<span class="cmd">sudo pacman</span> <span class="flag">-S</span> xfce4 xfce4-goodies lightdm lightdm-gtk-greeter
+<span class="cmd">sudo systemctl</span> enable lightdm
+
+<span class="comment"># Khởi động lại để vào giao diện đồ họa:</span>
+<span class="cmd">sudo reboot</span></code></pre>
+      </div>
+
+      <div class="note-box">
+        <strong>// Sau khi cài xong</strong>
+        Cài AUR helper (yay): <code style="color:var(--arch-blue);">git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si</code> — cho phép bạn truy cập kho AUR với hàng chục nghìn packages cộng đồng.
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-brand">// Linux Distros Guide — Made with ❤️ for the Linux community</div>
+  <div class="footer-links">
+    <a href="https://ubuntu.com" target="_blank">Ubuntu</a>
+    <a href="https://archlinux.org" target="_blank">Arch Linux</a>
+    <a href="https://wiki.archlinux.org" target="_blank">Arch Wiki</a>
+  </div>
+</footer>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx - 6}px, ${my - 6}px)`;
+  });
+
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.transform = `translate(${rx - 18}px, ${ry - 18}px)`;
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  // Scroll progress
+  const scrollLine = document.getElementById('scrollLine');
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    scrollLine.style.transform = `scaleX(${pct})`;
+  });
+
+  // Tabs
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Copy buttons
+  document.querySelectorAll('pre').forEach(pre => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    btn.addEventListener('click', () => {
+      const text = pre.innerText.replace(/copy\n?/, '');
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'copied!';
+        setTimeout(() => btn.textContent = 'copy', 2000);
+      });
+    });
+    pre.style.position = 'relative';
+    pre.appendChild(btn);
+  });
+
+  // Intersection observer for fade in
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.step, .distro-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
